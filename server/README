@@ -1,0 +1,17 @@
+Requires:
+ python-gevent
+ python-flask
+
+sudo apt-get install python-gevent python-flask
+
+At first run you may generate minimal initial config by:
+ ./initial.sh
+
+To generate self signed certificate:
+ ./gen_cert.sh
+
+To add new user:
+ ./add_storage.sh
+
+To add password for user:
+ ./gen_pass.sh
