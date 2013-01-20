@@ -11,14 +11,14 @@ fi
 
 function usage
 {
-	echo -e "Usage:\n    $0 digest file_to_update keyfile password [host]\n"
+	echo -e "Usage:\n    $0 digest file_to_send keyfile password [host]\n"
 	exit 1
 }
 
 if [ "x$PASSWORD" == "x" ] ; then
 	usage
 fi
-if [ "x$FNAME" == "x" ] ; then
+if [ ! -e "$FNAME" ] ; then
 	usage
 fi
 if [ ! -e "$KEYFILE" ] ; then
@@ -31,7 +31,8 @@ CRYPTED=$(tempfile)
 
 if [ -f "$CRYPTED" ] ; then
 	openssl aes-256-cbc -in "$FNAME" -out "$CRYPTED" -kfile "$KEYFILE"
-	outfile=$(curl -s -X POST -k -F filedata=@"$CRYPTED" -F challenge="$CHALL" https://$HOST/update/$DIGEST/$RESP/$FNAME)
+	#outfile=$(curl -s -X POST -k -F filedata=@"$CRYPTED" -F filename=$(basename "$FNAME") -F digest=$DIGEST https://$HOST/store)
+	outfile=$(curl -s -X POST -k -F filedata=@"$CRYPTED" -F filename=$(basename "$FNAME") -F challenge="$CHALL" https://$HOST/store/$DIGEST/$RESP)
 	rm -f "$CRYPTED"
 	echo $outfile
 fi

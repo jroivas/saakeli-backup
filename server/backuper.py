@@ -35,11 +35,12 @@ def index():
 
         <h2>Storing</h2>
         <div>Storing files may be done with GET or POST:
-        <pre>POST: https://host:port/store/DIGEST
+        <pre>POST: https://host:port/store/DIGEST/VERIFY
 POST: https://host:port/store
-GET : https://host:port/store/DIGEST?filename=FILENAME&data=CONTENTS</pre>
+GET : https://host:port/store/DIGEST/VERIFY?filename=FILENAME&data=CONTENTS&challenge=CHALLENGE</pre>
         In POST method, when providing "filename" in form and contents as multipart data "filedata".
-        If not providing DIGEST in url, POST must be used and provide "digest" key in form data.
+        If not providing DIGEST and VERIFY in url, POST must be used and provide "digest" key and "verify" key in form data.
+        Also in case of POST, key "challenge" must be provided in form data.
         </div>
 
         <h2>Retrieving files</h2>
@@ -406,13 +407,17 @@ def write_file(fname, data):
     return res
 
 @app.route('/store', methods=['GET', 'POST'])
-@app.route('/store/<digest>', methods=['GET', 'POST'])
-def store(digest=None):
+@app.route('/store/<digest>/<verify>', methods=['GET', 'POST'])
+def store(digest=None, verify=None):
+    challenge = solve_challenge()
+
     if request.method == 'POST':
         if digest is None:
             digest = request.form['digest']
+        if verify is None:
+            verify = request.form['verify']
     
-        ok = validate_digest(digest)
+        ok = validate_digest(digest, challenge, verify)
         if not ok:
             return error_auth()
         if not 'filedata' in request.files:
@@ -429,7 +434,9 @@ def store(digest=None):
         else:
             res = False
     else:
-        ok = validate_digest(digest)
+        if verify is None:
+            verify = request.args.get('verify', '')
+        ok = validate_digest(digest, challenge, verify)
         if not ok:
             return error_auth()
         data = request.args.get('data', '')
