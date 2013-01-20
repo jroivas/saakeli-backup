@@ -28,7 +28,7 @@ def index():
     </head>
 
     <body>
-        <h1>Backup server</h1>
+        <h1>Saakeli-backup server</h1>
 
         <div>Provides simple API to load and store files.
         </div>

@@ -30,7 +30,7 @@ RESP=$(echo -n $PASSWORD$CHALL|sha256sum|cut -d' ' -f1)
 CRYPTED=$(tempfile)
 
 if [ -f "$CRYPTED" ] ; then
-	openssl aes-256-cbc -in "$FNAME" -out "$CRYPTED" -k "$KEYFILE"
+	openssl aes-256-cbc -in "$FNAME" -out "$CRYPTED" -kfile "$KEYFILE"
 	outfile=$(curl -s -X POST -k -F filedata=@"$CRYPTED" -F challenge="$CHALL" https://$HOST/update/$DIGEST/$RESP/$FNAME)
 	rm -f "$CRYPTED"
 	echo $outfile

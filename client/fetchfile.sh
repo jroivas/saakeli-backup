@@ -28,4 +28,4 @@ fi
 CHALL="$RANDOM$RANDOM$RANDOM"
 RESP=$(echo -n $PASSWORD$CHALL|sha256sum|cut -d' ' -f1)
 
-curl -X POST -s -k -F challenge=$CHALL https://$HOST/load/$DIGEST/$RESP/$FNAME | openssl aes-256-cbc -d -k "$KEYFILE"
+curl -X POST -s -k -F challenge=$CHALL https://$HOST/load/$DIGEST/$RESP/$FNAME | openssl aes-256-cbc -d -kfile "$KEYFILE"
