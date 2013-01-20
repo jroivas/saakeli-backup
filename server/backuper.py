@@ -16,7 +16,7 @@ app.config['STORAGE'] = './store'
 def index():
     res = """<html>
     <head>
-        <title>Backup server</title>
+        <title>Saakeli-backup server</title>
         <style>
         div {
             margin-bottom: 1em;

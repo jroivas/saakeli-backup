@@ -25,7 +25,6 @@ CRYPTED=$(tempfile)
 
 if [ -f "$CRYPTED" ] ; then
 	openssl aes-256-cbc -in "$FNAME" -out "$CRYPTED" -k "$KEYFILE"
-	CRYPTED=$FNAME
 	outfile=$(curl -s -X POST -k -F filedata=@"$CRYPTED" -F filename=$(basename "$FNAME") -F digest=$DIGEST https://$HOST/store)
 	rm -f "$CRYPTED"
 	echo $outfile
