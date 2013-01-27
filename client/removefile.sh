@@ -8,6 +8,9 @@ if [ "x$4" != "x" ] ; then
 	HOST=$4
 fi
 
+dir=$(dirname $0)
+source ${dir}/tools.sh
+
 function usage
 {
 	echo -e "Usage:\n    $0 digest file_to_remove keyfile password [host]\n"
@@ -21,10 +24,15 @@ if [ "x$FNAME" == "x" ] ; then
 	usage
 fi
 
+#if [[ "$HOST" != *"http"* ]] ; then
+#	HOST="https://$HOST"
+#fi
+checkhost
 
-CHALL="$RANDOM$RANDOM$RANDOM"
-RESP=$(echo -n $PASSWORD$CHALL|sha256sum|cut -d' ' -f1)
-verify=$(curl -s -X POST -k -F challenge="$CHALL" https://$HOST/remove/$DIGEST/$RESP/$FNAME|cut -d' ' -f2)
+challenge
+#CHALL="$RANDOM$RANDOM$RANDOM"
+#RESP=$(echo -n $PASSWORD$CHALL|sha256sum|cut -d' ' -f1)
+verify=$(curl -s -X POST -k -F challenge="$CHALL" $HOST/remove/$DIGEST/$RESP/$FNAME|cut -d' ' -f2)
 
 if [ "x$verify" == "x" ] || [ "x$verify" == "xFAIL" ] || [ "x$verify" == "xERROR" ] ; then
 	echo "Didn't get proper verify code, aborting."
@@ -38,7 +46,8 @@ if [ "x$resp" != "xy" ] && [ "x$resp" != "xY" ] ; then
 	exit 0
 fi
 
-CHALL="$RANDOM$RANDOM$RANDOM"
-RESP=$(echo -n $PASSWORD$CHALL|sha256sum|cut -d' ' -f1)
-res=$(curl -s -X POST -k -F challenge="$CHALL" -F confirm="$verify" https://$HOST/remove/$DIGEST/$RESP/$FNAME)
+#CHALL="$RANDOM$RANDOM$RANDOM"
+#RESP=$(echo -n $PASSWORD$CHALL|sha256sum|cut -d' ' -f1)
+challenge
+res=$(curl -s -X POST -k -F challenge="$CHALL" -F confirm="$verify" $HOST/remove/$DIGEST/$RESP/$FNAME)
 echo $res

@@ -24,5 +24,8 @@ fi
 CHALL="$RANDOM$RANDOM$RANDOM"
 RESP=$(echo -n $PASSWORD$CHALL|sha256sum|cut -d' ' -f1)
 
-url=$(curl -s -X POST -k -F challenge="$CHALL" https://$HOST/public/$DIGEST/$RESP/$FNAME)
+if [[ "$HOST" != *"http"* ]] ; then
+	HOST="https://$HOST"
+fi
+url=$(curl -s -X POST -k -F challenge="$CHALL" $HOST/public/$DIGEST/$RESP/$FNAME)
 echo $url

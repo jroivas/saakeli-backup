@@ -8,6 +8,8 @@ HOST="localhost:5000"
 if [ "x$5" != "x" ] ; then
 	HOST=$5
 fi
+dir=$(dirname $0)
+source ${dir}/tools.sh
 
 function usage
 {
@@ -25,14 +27,13 @@ if [ ! -e "$KEYFILE" ] ; then
 	usage
 fi
 
-CHALL="$RANDOM$RANDOM$RANDOM$RANDOM"
-RESP=$(echo -n $PASSWORD$CHALL|sha256sum|cut -d' ' -f1)
-CRYPTED=$(tempfile)
+checkhost
+challenge
+gettmp
 
 if [ -f "$CRYPTED" ] ; then
 	openssl aes-256-cbc -in "$FNAME" -out "$CRYPTED" -kfile "$KEYFILE"
-	#outfile=$(curl -s -X POST -k -F filedata=@"$CRYPTED" -F filename=$(basename "$FNAME") -F digest=$DIGEST https://$HOST/store)
-	outfile=$(curl -s -X POST -k -F filedata=@"$CRYPTED" -F filename=$(basename "$FNAME") -F challenge="$CHALL" https://$HOST/store/$DIGEST/$RESP)
+	outfile=$(curl -s -X POST -k -F filedata=@"$CRYPTED" -F filename=$(basename "$FNAME") -F challenge="$CHALL" $HOST/store/$DIGEST/$RESP)
 	rm -f "$CRYPTED"
 	echo $outfile
 fi
