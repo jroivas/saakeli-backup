@@ -57,6 +57,23 @@ GET : https://host:port/update/DIGEST/VERIFY/FILENAME?data=CONTENTS&challenge=CH
         In case of POST, key "challenge" must be provided in form data.
         </div>
 
+        <h2>Listing files</h2>
+        <div>Get list of files with GET or POST:
+        <pre>POST: https://host:port/list/DIGEST/VERIFY/PATTERN
+GET : https://host:port/update/DIGEST/VERIFY/PATTERn?&challenge=CHALLENGE</pre>
+        In case of POST, key "challenge" must be provided in form data.
+        </div>
+
+        <div>
+        PATTERN is matching rules are following:
+        <pre>
+        A      List all files
+        Smat   Starts with "mat", for example: matchbox
+        Emat   Ens with "mat", for example: tomat
+        Cmat   Contains "mat", for example automatic
+        </pre>
+        </div>
+
         <h2>Get public URL for files</h2>
         <div>One may update files with GET or POST:
         <pre>POST: https://host:port/public/DIGEST/VERIFY/FILENAME
@@ -206,6 +223,44 @@ def load(digest, verify, key):
         if fd is not None:
             fd.close()
     return Response(res, mimetype='application/octet-stream')
+
+def get_files(digest, match_rule, match_data):
+    fpath = os.path.join(app.config['STORAGE'], digest)
+    res = []
+    for filename in os.listdir(fpath):
+        if filename[0] == '.':
+            continue
+
+        if match_rule == 'A':
+            res.append(filename)
+        elif match_rule == 'B' and filename.startswith(match_data):
+            res.append(filename)
+        elif match_rule == 'E' and filename.endswith(match_data):
+            res.append(filename)
+        elif match_rule == 'C' and match_data in filename:
+            res.append(filename)
+
+    return res
+
+@app.route('/list/<digest>/<verify>/<pattern>', methods=['GET', 'POST'])
+def list(digest, verify, pattern):
+    challenge = solve_challenge()
+
+    ok = validate_digest(digest, challenge, verify)
+    if not ok:
+        return error_auth()
+
+    if pattern is None:
+        return error_found()
+    if not pattern:
+        return error_found()
+
+    match_rule = pattern[0]
+    match_data = pattern[1:]
+
+    filelist = get_files(digest, match_rule, match_data)
+    return '\n'.join(filelist)
+
 
 @app.route('/update/<digest>/<verify>/<key>', methods=['GET', 'POST'])
 def update(digest, verify, key):
